@@ -9,7 +9,8 @@ ENV CGO_ENABLED=0\
 WORKDIR /go/src/github.com/operator-framework
 
 RUN apk update \
-    && apk add git mercurial make
+    && apk add git mercurial make \
+    && rm -rf /var/cache/apk/*
 
 # Add rest of source code
 # This will download the git repository and not install it
@@ -22,17 +23,19 @@ RUN ls -l \
     && make tidy \
     && make ci-build
 
-FROM alpine
+FROM golang:1.12-alpine
 
 ENV CGO_ENABLED=0\
     GOOS=linux
 
-WORKDIR /data/
+WORKDIR /workspace
 
 RUN apk --no-cache update && \
-      apk --no-cache add bash ca-certificates && \
+      apk --no-cache add bash ca-certificates git mercurial make && \
       rm -rf /var/cache/apk/*
 
 COPY --from=builder /go/src/github.com/operator-framework/operator-sdk/build/operator-sdk /usr/local/bin/
 
-CMD ["operator-sdk"]
+VOLUME ["/workspace"]
+
+ENTRYPOINT ["operator-sdk"]
