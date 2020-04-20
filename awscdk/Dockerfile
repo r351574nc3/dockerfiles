@@ -1,8 +1,12 @@
 from node:alpine
 
-ENV AWS_REGION us-east-1
+ARG AWS_USER="node"
 
-RUN apk update \\
+ENV AWS_REGION us-west-2\
+    AWS_USER=$AWS_USER\
+    AWS_REGION=us-west-2
+
+RUN apk update \
     && apk add --no-cache ca-certificates\
         bash \
         curl \
@@ -13,4 +17,8 @@ RUN pip3 install --upgrade pip \
     && pip3 install awscli \
     && npm install -g aws-cdk
 
-RUN COPY ./credentials /home/root/.aws/credentials
+USER $AWS_USER
+
+COPY ./credentials /home/root/.aws/credentials
+
+WORKDIR /workspace

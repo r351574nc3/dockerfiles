@@ -2,8 +2,6 @@ FROM golang:1.13-alpine as goapps
 
 ENV CGO_ENABLED=0\
     GOOS=linux\
-    GOPRIVATE=github.com/InVisionApp/*
-
 
 RUN apk update \\
     && apk add --no-cache ca-certificates\
@@ -22,20 +20,9 @@ COPY ./.netrc /root/
 
 # Add rest of source code
 
-RUN go get github.com/InVisionApp/fleet \
-    && go get github.com/InVisionApp/hound
-
-WORKDIR /go/src/github.com/InVisionApp/fleet
-    
-RUN GOOS=linux CGO_ENABLED=0 go build -a -installsuffix cgo -o fleet .
-
-WORKDIR /go/src/github.com/InVisionApp/hound
-    
-RUN GOOS=linux CGO_ENABLED=0 go build -a -installsuffix cgo -o hound .
-
 FROM alpine
 
-LABEL maintainer="Leo Przybylski <leonardprzybylski@invisionapp.com>"
+LABEL maintainer="Leo Przybylski <r351574nc3 at gmail.com>"
 
 ARG NB_USER="jovyan"
 ARG NB_UID="1000"
@@ -77,9 +64,6 @@ RUN apk update \
     && chmod +x /usr/local/bin/docker-machine \
     && rm -rf /var/cache/apk/*
 
-COPY --from=goapps /go/src/github.com/InVisionApp/hound/hound /usr/local/bin/hound
-COPY --from=goapps /go/src/github.com/InVisionApp/fleet/fleet /usr/local/bin/fleet
-COPY --from=goapps /go/src/github.com/InVisionApp/fleet/fleet_run.sh /usr/local/bin/fleet_run.sh
 COPY start-notebook.sh /usr/local/bin
 COPY start-singleuser.sh /usr/local/bin
 
