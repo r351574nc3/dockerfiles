@@ -15,10 +15,10 @@ RUN apk update \
 
 RUN pip3 install --upgrade pip \
     && pip3 install awscli \
-    && npm install -g aws-cdk
+    && npm install -g aws-cdk \
+    && mkdir -p /home/$AWS_USER/.aws \
+    && chown -R $AWS_USER /home/$AWS_USER/.aws
 
 USER $AWS_USER
-
-COPY ./credentials /home/root/.aws/credentials
 
 WORKDIR /workspace
