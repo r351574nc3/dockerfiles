@@ -1,10 +1,10 @@
 from node:alpine
 
+ARG AWS_REGION="us-west-2"
 ARG AWS_USER="node"
 
-ENV AWS_REGION us-west-2\
-    AWS_USER=$AWS_USER\
-    AWS_REGION=us-west-2
+ENV AWS_REGION=$AWS_REGION\
+    AWS_USER=$AWS_USER
 
 RUN apk update \
     && apk add --no-cache ca-certificates\
