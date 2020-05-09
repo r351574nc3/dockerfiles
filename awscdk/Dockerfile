@@ -1,10 +1,8 @@
 from node:alpine
 
 ARG AWS_REGION="us-west-2"
-ARG AWS_USER="node"
 
-ENV AWS_REGION=$AWS_REGION\
-    AWS_USER=$AWS_USER
+ENV AWS_REGION=$AWS_REGION
 
 RUN apk update \
     && apk add --no-cache ca-certificates\
@@ -16,9 +14,19 @@ RUN apk update \
 RUN pip3 install --upgrade pip \
     && pip3 install awscli \
     && npm install -g aws-cdk \
-    && mkdir -p /home/$AWS_USER/.aws \
-    && chown -R $AWS_USER /home/$AWS_USER/.aws
+    && mkdir -p /home/root/.aws 
 
-USER $AWS_USER
+ONBUILD COPY package*json .npmrc* /app/
+ONBUILD RUN cd /app && npm install 
 
-WORKDIR /workspace
+# Now copy in the full code for the app
+ONBUILD COPY . /app
+ONBUILD RUN npm run build && rm -rf node_modules && npm install --production 
+    
+
+# Set our workdirectory to the app and start with npm
+WORKDIR /app
+EXPOSE 3000
+
+CMD ["endpoint.sh"]
+
