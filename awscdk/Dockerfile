@@ -13,7 +13,7 @@ RUN apk update \
 
 RUN pip3 install --upgrade pip \
     && pip3 install awscli \
-    && npm install -g aws-cdk \
+    && npm install -g aws-cdk@1.36.1 \
     && mkdir -p /home/root/.aws 
 
 ONBUILD COPY package*json .npmrc* /app/
