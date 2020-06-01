@@ -20,9 +20,10 @@ ENV AWS_REGION=$AWS_REGION
 
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get update -y \
-    && apt-get update -y --no-cache ca-certificates\
+    && apt-get upgrade -y ca-certificates\
         curl \
         python3 \
+        python3-pip \
     && curl -sSL  ${COMMON_SCRIPT_SOURCE} -o /tmp/common-setup.sh \
     && ([ "${COMMON_SCRIPT_SHA}" = "dev-mode" ] || (echo "${COMMON_SCRIPT_SHA} */tmp/common-setup.sh" | sha256sum -c -)) \
     && /bin/bash /tmp/common-setup.sh "${INSTALL_ZSH}" "${USERNAME}" "${USER_UID}" "${USER_GID}" "${UPGRADE_PACKAGES}" \
@@ -70,12 +71,22 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     # Clean up
     && apt-get autoremove -y \
     && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && export DEBIAN_FRONTEND=interactive
+
+RUN if [ "$USER_GID" != "1000" ] || [ "$USER_UID" != "1000" ]; then \
+        groupmod --gid $USER_GID $USERNAME \
+        && usermod --uid $USER_UID --gid $USER_GID $USERNAME \
+        && chown -R $USER_UID:$USER_GID /home/$USERNAME; \
+    fi
 
 RUN pip3 install --upgrade pip \
     && pip3 install awscli \
     && npm install -g aws-cdk \
-    && mkdir -p /home/root/.aws 
+    && mkdir -p /home/${USERNAME}/.aws \
+    && chown -R $USER_UID:$USER_GID /home/${USERNAME}/.aws;
+
+USER ${USERNAME}
 
 ONBUILD COPY package*json .npmrc* /app/
 ONBUILD RUN cd /app && npm install 
