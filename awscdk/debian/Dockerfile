@@ -1,4 +1,4 @@
-from node
+from node:slim
 
 ARG USERNAME=node
 ARG USER_UID=1000
